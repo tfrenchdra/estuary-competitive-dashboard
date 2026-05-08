@@ -1,0 +1,1189 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estuary — Competitive Intelligence Dashboard | Digital Reach Agency</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6; color: #1f2937; }
+.container { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 280px; background-color: #111827; color: #f3f4f6; padding: 24px 0; overflow-y: auto; box-shadow: 2px 0 8px rgba(0,0,0,0.15); position: fixed; height: 100vh; left: 0; z-index: 1000; }
+.sidebar-header { padding: 0 24px 32px; border-bottom: 1px solid #374151; }
+.sidebar-logo { font-weight: 700; font-size: 16px; color: #1a56db; margin-bottom: 4px; letter-spacing: 0.5px; }
+.sidebar-subtitle { font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; }
+.sidebar-nav { list-style: none; padding: 16px 0; }
+.sidebar-nav li { margin: 2px 0; }
+.nav-link { display: block; padding: 10px 24px; color: #d1d5db; text-decoration: none; font-size: 14px; transition: all 0.2s; border-left: 3px solid transparent; cursor: pointer; }
+.nav-link:hover { background-color: #1f2937; color: #fff; }
+.nav-link.active { background-color: #1f2937; color: #1a56db; border-left-color: #1a56db; font-weight: 600; }
+.main-content { margin-left: 280px; flex: 1; overflow-y: auto; padding: 0 0 40px; }
+.header { background: linear-gradient(135deg, #1a56db 0%, #1e40af 100%); color: white; padding: 32px 40px; }
+.header h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.header p { font-size: 14px; opacity: 0.85; }
+.info-card { background: #e3f2fd; border: 1px solid #90caf9; border-radius: 8px; padding: 12px 20px; margin: 20px 40px 0; display: flex; align-items: flex-start; gap: 12px; }
+.info-icon { width: 20px; height: 20px; border-radius: 50%; background: #1565c0; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.info-card-text { font-size: 13px; color: #1565c0; line-height: 1.5; }
+.section { display: none; padding: 32px 40px; }
+.section.active { display: block; }
+.section-title { font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+.section-desc { font-size: 14px; color: #6b7280; line-height: 1.6; margin-bottom: 24px; max-width: 900px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.kpi-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 3px solid #1a56db; }
+.kpi-card.competitor-1 { border-top-color: #f59e0b; }
+.kpi-card.competitor-2 { border-top-color: #ef4444; }
+.kpi-card.competitor-3 { border-top-color: #10b981; }
+.kpi-label { font-size: 12px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; margin-bottom: 8px; }
+.kpi-value { font-size: 28px; font-weight: 700; color: #111827; }
+.kpi-domain { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+.metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; }
+.metric-label { font-size: 12px; text-transform: uppercase; color: #6b7280; margin-bottom: 8px; }
+.metric-value { font-size: 32px; font-weight: 700; }
+.metric-sub { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+.chart-container { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 32px; position: relative; min-height: 400px; }
+.chart-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: #111827; }
+.chart-desc { font-size: 13px; color: #9ca3af; margin-bottom: 16px; line-height: 1.5; }
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 10px 12px; background: #f9fafb; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #374151; font-size: 12px; text-transform: uppercase; }
+td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+tr:hover { background: #f9fafb; }
+td a { color: #1a56db; text-decoration: none; word-break: break-all; }
+td a:hover { text-decoration: underline; }
+.tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.tab-button { padding: 8px 20px; border: 1px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; color: #6b7280; transition: all 0.2s; }
+.tab-button.active { background: #1a56db; color: white; border-color: #1a56db; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.threat-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 16px; overflow: hidden; }
+.threat-header { padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+.threat-header.critical { background: #fef2f2; border-left: 4px solid #ef4444; }
+.threat-header.warning { background: #fffbeb; border-left: 4px solid #f59e0b; }
+.threat-header.opportunity { background: #ecfdf5; border-left: 4px solid #10b981; }
+.threat-severity { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: 4px; }
+.threat-severity.critical { background: #fee2e2; color: #dc2626; }
+.threat-severity.warning { background: #fef3c7; color: #d97706; }
+.threat-severity.opportunity { background: #d1fae5; color: #059669; }
+.threat-title { font-size: 15px; font-weight: 600; color: #111827; }
+.threat-body { padding: 16px 24px 20px; font-size: 14px; color: #4b5563; line-height: 1.6; }
+.insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+.insight-box { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 20px; }
+.insight-box h4 { font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #111827; }
+.insight-box p, .insight-box li { font-size: 13px; color: #4b5563; line-height: 1.6; }
+.insight-box ul { padding-left: 20px; }
+.footer { text-align: center; padding: 32px 40px; color: #9ca3af; font-size: 13px; border-top: 1px solid #e5e7eb; margin-top: 40px; }
+.legend-pill { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+.legend-client { background: #1a56db; color: white; }
+.legend-c1 { background: #f59e0b; color: white; }
+.legend-c2 { background: #ef4444; color: white; }
+.legend-c3 { background: #10b981; color: white; }
+.delta-up { color: #10b981; font-weight: 600; }
+.delta-down { color: #ef4444; font-weight: 600; }
+.delta-flat { color: #6b7280; font-weight: 600; }
+@media (max-width: 1100px) {
+  .charts-row, .metrics-grid, .insight-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">DIGITAL REACH AGENCY</div>
+      <div class="sidebar-subtitle">Competitive Intelligence</div>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a class="nav-link active" onclick="switchSection('executive-summary', this)">Executive Summary</a></li>
+      <li><a class="nav-link" onclick="switchSection('sov-trends', this)">Share of Voice Trends</a></li>
+      <li><a class="nav-link" onclick="switchSection('authority-trends', this)">Authority Trends</a></li>
+      <li><a class="nav-link" onclick="switchSection('traffic-trends', this)">Organic Traffic Trends</a></li>
+      <li><a class="nav-link" onclick="switchSection('traffic-location', this)">Traffic by Location</a></li>
+      <li><a class="nav-link" onclick="switchSection('competitive-metrics', this)">Competitive Metrics</a></li>
+      <li><a class="nav-link" onclick="switchSection('top-pages', this)">Top Pages</a></li>
+      <li><a class="nav-link" onclick="switchSection('keyword-gap', this)">Keyword Gap Analysis</a></li>
+      <li><a class="nav-link" onclick="switchSection('aio-performance', this)">AI Overview Performance</a></li>
+      <li><a class="nav-link" onclick="switchSection('threats', this)">Strategic Threats &amp; Insights</a></li>
+    </ul>
+  </nav>
+  <main class="main-content">
+    <div class="header">
+      <h1>Estuary — Competitive Intelligence</h1>
+      <p>estuary.dev vs Fivetran, Hevo, Airbyte</p>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">i</div>
+      <div class="info-card-text">May 8, 2026 | Source: Ahrefs | Mode: Subdomains (includes www and all subdomains) | Country: US | Backlink counts are live crawl values and may fluctuate slightly between pulls</div>
+    </div>
+
+    <!-- 1. EXECUTIVE SUMMARY -->
+    <section id="executive-summary" class="section active">
+      <h2 class="section-title">Executive Summary</h2>
+      <p class="section-desc">Snapshot of where Estuary stands today against Fivetran, Hevo, and Airbyte across the metrics that drive organic visibility: keyword footprint, traffic, authority, and link equity. All numbers are US-market unless otherwise noted.</p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Organic Keywords</div><div class="kpi-value">884</div><div class="kpi-domain">estuary.dev</div></div>
+        <div class="kpi-card"><div class="kpi-label">Organic Traffic / mo</div><div class="kpi-value">4,515</div><div class="kpi-domain">estuary.dev</div></div>
+        <div class="kpi-card"><div class="kpi-label">Traffic Value</div><div class="kpi-value">$12.7K</div><div class="kpi-domain">estuary.dev</div></div>
+        <div class="kpi-card"><div class="kpi-label">Top-3 Keywords</div><div class="kpi-value">108</div><div class="kpi-domain">estuary.dev</div></div>
+        <div class="kpi-card"><div class="kpi-label">Domain Rating</div><div class="kpi-value">64</div><div class="kpi-domain">estuary.dev</div></div>
+        <div class="kpi-card"><div class="kpi-label">Live Backlinks</div><div class="kpi-value">14.1K</div><div class="kpi-domain">estuary.dev</div></div>
+        <div class="kpi-card"><div class="kpi-label">Referring Domains</div><div class="kpi-value">2,392</div><div class="kpi-domain">estuary.dev</div></div>
+        <div class="kpi-card"><div class="kpi-label">AIO Keywords</div><div class="kpi-value">7</div><div class="kpi-domain">estuary.dev</div></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Competitive Comparison — Core Metrics</div>
+        <div class="chart-desc">Side-by-side view of the four critical metrics: organic keywords, monthly organic traffic, domain rating, and referring domains. Estuary is the smallest player by every measure, with Fivetran setting the upper bound on keywords/traffic and Airbyte leading on raw backlinks.</div>
+        <div style="overflow-x:auto;"><table>
+          <thead><tr><th>Domain</th><th>Org Keywords</th><th>Org Traffic / mo</th><th>Traffic Value</th><th>Top-3 KWs</th><th>DR</th><th>Live Backlinks</th><th>Ref Domains</th><th>AIO KWs</th></tr></thead>
+          <tbody>
+            <tr><td><strong style="color:#1a56db;">Estuary</strong></td><td>884</td><td>4,515</td><td>$12.7K</td><td>108</td><td>64</td><td>14,132</td><td>2,392</td><td>7</td></tr>
+            <tr><td><strong style="color:#f59e0b;">Fivetran</strong></td><td>3,537</td><td>51,105</td><td>$237.2K</td><td>891</td><td>80</td><td>329,789</td><td>7,832</td><td>25</td></tr>
+            <tr><td><strong style="color:#ef4444;">Hevo</strong></td><td>2,308</td><td>6,269</td><td>$14.7K</td><td>293</td><td>76</td><td>25,600</td><td>4,208</td><td>18</td></tr>
+            <tr><td><strong style="color:#10b981;">Airbyte</strong></td><td>1,191</td><td>20,330</td><td>$127.4K</td><td>274</td><td>77</td><td>781,030</td><td>4,323</td><td>25</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Organic Keywords vs Organic Traffic</div>
+        <div class="chart-desc">Bar comparison of keyword footprint and monthly traffic. Fivetran owns 4x Estuary's keyword count and 11x its traffic; Airbyte and Hevo sit in the middle.</div>
+        <div style="height:380px;"><canvas id="executiveBarChart"></canvas></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Estuary's Organic Competitor Landscape (Top 10 by Keyword Overlap)</div>
+        <div class="chart-desc">The domains Ahrefs identifies as ranking for the same US keywords as Estuary. Direct rivals Fivetran and Integrate.io appear here alongside category authorities (Snowflake, IBM, Databricks) and information sites (Medium, GeeksforGeeks).</div>
+        <div style="overflow-x:auto;"><table>
+          <thead><tr><th>Competitor</th><th>Common Keywords</th><th>Their Total Keywords</th><th>Their Traffic</th></tr></thead>
+          <tbody>
+            <tr><td>medium.com</td><td>461</td><td>2,722,919</td><td>13,208,729</td></tr>
+            <tr><td>geeksforgeeks.org</td><td>227</td><td>450,110</td><td>3,398,720</td></tr>
+            <tr><td>microsoft.com</td><td>156</td><td>1,327,368</td><td>42,982,655</td></tr>
+            <tr><td>ibm.com</td><td>142</td><td>189,806</td><td>4,226,739</td></tr>
+            <tr><td>snowflake.com</td><td>128</td><td>15,130</td><td>322,308</td></tr>
+            <tr><td>integrate.io</td><td>127</td><td>5,342</td><td>53,220</td></tr>
+            <tr><td>google.com</td><td>126</td><td>67,793</td><td>1,580,440</td></tr>
+            <tr><td>databricks.com</td><td>104</td><td>21,145</td><td>441,949</td></tr>
+            <tr><td>datacamp.com</td><td>95</td><td>58,438</td><td>428,600</td></tr>
+            <tr><td><strong style="color:#f59e0b;">fivetran.com</strong></td><td>91</td><td>3,448</td><td>51,110</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- 2. SHARE OF VOICE TRENDS -->
+    <section id="sov-trends" class="section">
+      <h2 class="section-title">Share of Voice Trends</h2>
+      <p class="section-desc">How each domain's slice of total organic traffic across the four-domain set has shifted over the last 13 months. Estuary's collapse since late 2025 — driven by the documented spam-link contamination and algorithm impact — is most visible here.</p>
+
+      <div class="chart-container">
+        <div class="chart-title">Share of Voice — Stacked Organic Traffic %</div>
+        <div class="chart-desc">Each domain's share of combined monthly organic traffic. Hover to see raw traffic and percentage. Fivetran has been pulling away since Q1 2026 while Estuary, Hevo, and Airbyte have all retreated.</div>
+        <div style="height:420px;"><canvas id="sovChart"></canvas></div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-container">
+          <div class="chart-title">Raw Organic Traffic — All Domains</div>
+          <div class="chart-desc">Absolute traffic over time, monthly.</div>
+          <div style="height:340px;"><canvas id="rawTrafficChart"></canvas></div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">Traffic Value Trend (USD)</div>
+          <div class="chart-desc">Estimated value of organic traffic if bought through paid search.</div>
+          <div style="height:340px;"><canvas id="trafficValueChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Estuary — Keyword Position Distribution Over Time</div>
+        <div class="chart-desc">Estuary's keyword count by ranking bucket. The shrinkage in mid- and long-tail rankings (positions 11+) since late 2025 is the visible footprint of the link-toxicity / algorithm impact.</div>
+        <div style="height:380px;"><canvas id="positionDistChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- 3. AUTHORITY TRENDS -->
+    <section id="authority-trends" class="section">
+      <h2 class="section-title">Authority Trends</h2>
+      <p class="section-desc">Domain Rating and referring-domain trajectories — the backbone of off-site authority. Estuary's referring-domain count spiked then plateaued in late 2025, consistent with the spam-link contamination that triggered the recovery work in this engagement.</p>
+
+      <div class="charts-row">
+        <div class="chart-container">
+          <div class="chart-title">Domain Rating History</div>
+          <div class="chart-desc">Ahrefs DR (0-100) by month. Fivetran sits 16 points above Estuary; Hevo and Airbyte both ~12 points above.</div>
+          <div style="height:380px;"><canvas id="drHistoryChart"></canvas></div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">Referring Domains History</div>
+          <div class="chart-desc">Unique referring domains over time. Estuary's spike Sep 2025–Jan 2026 is the toxic-link burst now being remediated.</div>
+          <div style="height:380px;"><canvas id="refDomHistoryChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ORGANIC TRAFFIC TRENDS -->
+    <section id="traffic-trends" class="section">
+      <h2 class="section-title">Organic Traffic Trends</h2>
+      <p class="section-desc">Monthly organic traffic across the four domains. Fivetran is the only domain in clear growth; Estuary and Hevo have both lost ~85-90% of their peak traffic over the last six months.</p>
+
+      <div class="chart-container">
+        <div class="chart-title">Monthly Organic Traffic — All Domains</div>
+        <div class="chart-desc">US-only monthly organic traffic, last 14 months. The May 2026 reading is a partial-month estimate.</div>
+        <div style="height:420px;"><canvas id="trafficLineChart"></canvas></div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="chart-container" style="min-height:auto;">
+          <div class="chart-title">12-Month Traffic Change</div>
+          <div class="chart-desc">May 2025 vs May 2026 organic traffic.</div>
+          <table>
+            <thead><tr><th>Domain</th><th>May 2025</th><th>May 2026</th><th>Change</th></tr></thead>
+            <tbody>
+              <tr><td><strong style="color:#1a56db;">Estuary</strong></td><td>31,065</td><td>6,562</td><td class="delta-down">-78.9%</td></tr>
+              <tr><td><strong style="color:#f59e0b;">Fivetran</strong></td><td>69,701</td><td>86,463</td><td class="delta-up">+24.0%</td></tr>
+              <tr><td><strong style="color:#ef4444;">Hevo</strong></td><td>46,342</td><td>12,726</td><td class="delta-down">-72.5%</td></tr>
+              <tr><td><strong style="color:#10b981;">Airbyte</strong></td><td>81,885</td><td>45,266</td><td class="delta-down">-44.7%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="chart-container" style="min-height:auto;">
+          <div class="chart-title">Peak vs Current Traffic</div>
+          <div class="chart-desc">How far each domain has fallen from its 14-month peak.</div>
+          <table>
+            <thead><tr><th>Domain</th><th>Peak</th><th>Current</th><th>Drawdown</th></tr></thead>
+            <tbody>
+              <tr><td><strong style="color:#1a56db;">Estuary</strong></td><td>65,560 (Sep '25)</td><td>6,562</td><td class="delta-down">-90.0%</td></tr>
+              <tr><td><strong style="color:#f59e0b;">Fivetran</strong></td><td>86,539 (Apr '26)</td><td>86,463</td><td class="delta-flat">-0.1%</td></tr>
+              <tr><td><strong style="color:#ef4444;">Hevo</strong></td><td>82,430 (Sep '25)</td><td>12,726</td><td class="delta-down">-84.6%</td></tr>
+              <tr><td><strong style="color:#10b981;">Airbyte</strong></td><td>82,483 (Apr '25)</td><td>45,266</td><td class="delta-down">-45.1%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. TRAFFIC BY LOCATION -->
+    <section id="traffic-location" class="section">
+      <h2 class="section-title">Traffic by Location</h2>
+      <p class="section-desc">Where Estuary's organic traffic actually lives geographically. The US delivers ~70% of Estuary's pageviews — concentration of GTM effort there is justified.</p>
+
+      <div class="chart-container">
+        <div class="chart-title">Estuary — Top 10 Countries by Organic Traffic</div>
+        <div class="chart-desc">Monthly organic traffic across Estuary's top markets.</div>
+        <div style="height:420px;"><canvas id="estuaryCountryChart"></canvas></div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="chart-container" style="min-height:auto;">
+          <div class="chart-title">Estuary — Country Detail</div>
+          <table>
+            <thead><tr><th>Country</th><th>Org Traffic</th><th>Org Keywords</th></tr></thead>
+            <tbody>
+              <tr><td>United States</td><td>4,515</td><td>884</td></tr>
+              <tr><td>India</td><td>1,076</td><td>345</td></tr>
+              <tr><td>United Kingdom</td><td>146</td><td>81</td></tr>
+              <tr><td>Brazil</td><td>81</td><td>53</td></tr>
+              <tr><td>Pakistan</td><td>81</td><td>25</td></tr>
+              <tr><td>Canada</td><td>73</td><td>78</td></tr>
+              <tr><td>Russia</td><td>71</td><td>81</td></tr>
+              <tr><td>Indonesia</td><td>43</td><td>26</td></tr>
+              <tr><td>Australia</td><td>42</td><td>48</td></tr>
+              <tr><td>Spain</td><td>38</td><td>26</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="chart-container" style="min-height:auto;">
+          <div class="chart-title">Tier-1 Market Comparison (US Traffic)</div>
+          <div class="chart-desc">US-only organic traffic for each domain — Estuary's home market against direct rivals.</div>
+          <div style="height:300px;"><canvas id="usTrafficChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. COMPETITIVE METRICS -->
+    <section id="competitive-metrics" class="section">
+      <h2 class="section-title">Competitive Metrics</h2>
+      <p class="section-desc">Six head-to-head bar charts across the metrics that matter for organic visibility. Hover any bar to see the share-of-total percentage.</p>
+
+      <div class="charts-row">
+        <div class="chart-container"><div class="chart-title">Referring Domains</div><div style="height:300px;"><canvas id="metricRefDomains"></canvas></div></div>
+        <div class="chart-container"><div class="chart-title">Domain Rating</div><div style="height:300px;"><canvas id="metricDR"></canvas></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-container"><div class="chart-title">Organic Traffic / mo</div><div style="height:300px;"><canvas id="metricTraffic"></canvas></div></div>
+        <div class="chart-container"><div class="chart-title">Organic Keywords</div><div style="height:300px;"><canvas id="metricKeywords"></canvas></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-container"><div class="chart-title">Traffic Value (USD)</div><div style="height:300px;"><canvas id="metricTrafficValue"></canvas></div></div>
+        <div class="chart-container"><div class="chart-title">Live Backlinks</div><div style="height:300px;"><canvas id="metricBacklinks"></canvas></div></div>
+      </div>
+    </section>
+
+    <!-- 7. TOP PAGES -->
+    <section id="top-pages" class="section">
+      <h2 class="section-title">Top Pages</h2>
+      <p class="section-desc">The 15 highest-trafficked pages on each domain. Click any URL to inspect. Estuary's traffic is concentrated in long-tail blog posts — Fivetran and Airbyte both have a powerful homepage as their #1 traffic source.</p>
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('pages-estuary', this)">Estuary</button>
+        <button class="tab-button" onclick="switchTab('pages-fivetran', this)">Fivetran</button>
+        <button class="tab-button" onclick="switchTab('pages-hevo', this)">Hevo</button>
+        <button class="tab-button" onclick="switchTab('pages-airbyte', this)">Airbyte</button>
+      </div>
+      <div id="pages-estuary" class="tab-content active">
+        <div class="chart-container"><table>
+          <thead><tr><th>URL</th><th>Traffic</th><th>Keywords</th><th>Top Keyword</th><th>Volume</th></tr></thead>
+          <tbody id="pages-estuary-body"></tbody>
+        </table></div>
+      </div>
+      <div id="pages-fivetran" class="tab-content">
+        <div class="chart-container"><table>
+          <thead><tr><th>URL</th><th>Traffic</th><th>Keywords</th><th>Top Keyword</th><th>Volume</th></tr></thead>
+          <tbody id="pages-fivetran-body"></tbody>
+        </table></div>
+      </div>
+      <div id="pages-hevo" class="tab-content">
+        <div class="chart-container"><table>
+          <thead><tr><th>URL</th><th>Traffic</th><th>Keywords</th><th>Top Keyword</th><th>Volume</th></tr></thead>
+          <tbody id="pages-hevo-body"></tbody>
+        </table></div>
+      </div>
+      <div id="pages-airbyte" class="tab-content">
+        <div class="chart-container"><table>
+          <thead><tr><th>URL</th><th>Traffic</th><th>Keywords</th><th>Top Keyword</th><th>Volume</th></tr></thead>
+          <tbody id="pages-airbyte-body"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- 8. KEYWORD GAP ANALYSIS -->
+    <section id="keyword-gap" class="section">
+      <h2 class="section-title">Keyword Gap Analysis</h2>
+      <p class="section-desc">Top non-branded keywords each competitor ranks for in the Top 10 with US monthly volume ≥100. These are content opportunities Estuary either doesn't rank for at all or ranks weaker than the competitor — a starting point for the editorial roadmap.</p>
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('gap-fivetran', this)">vs Fivetran</button>
+        <button class="tab-button" onclick="switchTab('gap-hevo', this)">vs Hevo</button>
+        <button class="tab-button" onclick="switchTab('gap-airbyte', this)">vs Airbyte</button>
+      </div>
+      <div id="gap-fivetran" class="tab-content active">
+        <div class="chart-container"><table>
+          <thead><tr><th>Keyword</th><th>Fivetran Position</th><th>US Volume</th><th>Their Traffic</th><th>Ranking URL</th></tr></thead>
+          <tbody id="gap-fivetran-body"></tbody>
+        </table></div>
+      </div>
+      <div id="gap-hevo" class="tab-content">
+        <div class="chart-container"><table>
+          <thead><tr><th>Keyword</th><th>Hevo Position</th><th>US Volume</th><th>Their Traffic</th><th>Ranking URL</th></tr></thead>
+          <tbody id="gap-hevo-body"></tbody>
+        </table></div>
+      </div>
+      <div id="gap-airbyte" class="tab-content">
+        <div class="chart-container"><table>
+          <thead><tr><th>Keyword</th><th>Airbyte Position</th><th>US Volume</th><th>Their Traffic</th><th>Ranking URL</th></tr></thead>
+          <tbody id="gap-airbyte-body"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- 9. AIO PERFORMANCE -->
+    <section id="aio-performance" class="section">
+      <h2 class="section-title">AI Overview Performance</h2>
+      <p class="section-desc">Where each domain currently appears as a Google AI Overview citation. The AIO surface is where buyer journeys increasingly start — Fivetran and Airbyte are roughly tied at 25 AIO keywords each, Hevo trails at 18, and Estuary sits at 7.</p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Estuary AIO Keywords</div><div class="kpi-value">7</div></div>
+        <div class="kpi-card competitor-1"><div class="kpi-label">Fivetran AIO Keywords</div><div class="kpi-value">25+</div></div>
+        <div class="kpi-card competitor-2"><div class="kpi-label">Hevo AIO Keywords</div><div class="kpi-value">18+</div></div>
+        <div class="kpi-card competitor-3"><div class="kpi-label">Airbyte AIO Keywords</div><div class="kpi-value">25+</div></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">AIO Keyword Count vs AIO Traffic</div>
+        <div class="chart-desc">Number of AIO citations and total traffic from those AIO keywords. Fivetran converts AIO presence into more traffic than anyone — a function of high-volume informational queries (etl tools, data warehouse benefits).</div>
+        <div style="height:340px;"><canvas id="aioCountChart"></canvas></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('aio-estuary', this)">Estuary</button>
+        <button class="tab-button" onclick="switchTab('aio-fivetran', this)">Fivetran</button>
+        <button class="tab-button" onclick="switchTab('aio-hevo', this)">Hevo</button>
+        <button class="tab-button" onclick="switchTab('aio-airbyte', this)">Airbyte</button>
+      </div>
+      <div id="aio-estuary" class="tab-content active">
+        <div class="chart-container"><table>
+          <thead><tr><th>Keyword</th><th>Position</th><th>Volume</th><th>Traffic</th><th>Ranking URL</th></tr></thead>
+          <tbody id="aio-estuary-body"></tbody>
+        </table></div>
+      </div>
+      <div id="aio-fivetran" class="tab-content">
+        <div class="chart-container"><table>
+          <thead><tr><th>Keyword</th><th>Position</th><th>Volume</th><th>Traffic</th><th>Ranking URL</th></tr></thead>
+          <tbody id="aio-fivetran-body"></tbody>
+        </table></div>
+      </div>
+      <div id="aio-hevo" class="tab-content">
+        <div class="chart-container"><table>
+          <thead><tr><th>Keyword</th><th>Position</th><th>Volume</th><th>Traffic</th><th>Ranking URL</th></tr></thead>
+          <tbody id="aio-hevo-body"></tbody>
+        </table></div>
+      </div>
+      <div id="aio-airbyte" class="tab-content">
+        <div class="chart-container"><table>
+          <thead><tr><th>Keyword</th><th>Position</th><th>Volume</th><th>Traffic</th><th>Ranking URL</th></tr></thead>
+          <tbody id="aio-airbyte-body"></tbody>
+        </table></div>
+      </div>
+
+      <div class="insight-grid">
+        <div class="insight-box">
+          <h4>Where Estuary already wins in AIO</h4>
+          <ul>
+            <li><strong>aws iceberg</strong> (vol 400) — Apache Iceberg tutorial page is cited</li>
+            <li><strong>create database postgres</strong> (vol 200)</li>
+            <li><strong>salesforce to redshift</strong> (vol 200)</li>
+            <li><strong>what is redshift database</strong> (vol 200) — also cited by Hevo, contested</li>
+          </ul>
+        </div>
+        <div class="insight-box">
+          <h4>AIO surface area Estuary should be defending</h4>
+          <ul>
+            <li><strong>airbyte vs fivetran</strong> — Fivetran owns this AIO citation; Estuary has a Fivetran-alternatives page already, opportunity to expand</li>
+            <li><strong>fivetran vs informatica / vs snowflake</strong> — Fivetran writes its own comparisons and gets the AIO. Estuary should mirror this with anti-Fivetran comparisons</li>
+            <li><strong>data integration tools / etl tools</strong> (vol 4,900) — Fivetran's #1 AIO citation. Estuary's data-integration-tools post needs targeted AEO updates</li>
+            <li><strong>ai data integration</strong> (vol 600) — Fivetran owns this with an AI-era post; ties directly to Estuary's "right-time" + AI thesis</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. STRATEGIC THREATS -->
+    <section id="threats" class="section">
+      <h2 class="section-title">Strategic Threats &amp; Insights</h2>
+      <p class="section-desc">The competitive picture distilled into prioritized action items. Severity reflects size of the gap and speed at which it's widening.</p>
+
+      <div class="threat-card">
+        <div class="threat-header critical">
+          <span class="threat-severity critical">Critical</span>
+          <span class="threat-title">Estuary traffic down ~90% from peak — recovery is the gating workstream</span>
+        </div>
+        <div class="threat-body">Organic traffic fell from 65,560 in September 2025 to 6,562 in May 2026 — a ~90% drawdown. Hevo shows a similar (but smaller) pattern, suggesting a sector-wide algorithm/AIO impact, but Estuary's referring-domain spike Sep 2025 → Jan 2026 (765 → 2,597) points to spam-link contamination as an additional driver. Phase 1 of this engagement must lead with the technical/link audit and disavow before any growth content ships.</div>
+      </div>
+
+      <div class="threat-card">
+        <div class="threat-header critical">
+          <span class="threat-severity critical">Critical</span>
+          <span class="threat-title">Fivetran is widening the gap — only competitor in clear growth</span>
+        </div>
+        <div class="threat-body">Fivetran is the only domain in the set growing organic traffic over the trailing 12 months (+24% YoY) and is actively gaining keywords in positions 1-10 (765 keywords gained in top-3 from Apr 2025 to Apr 2026). They've also reached DR 80 and are pulling away on referring-domain growth (+81% over 13 months). Every month Estuary spends in recovery, Fivetran compounds.</div>
+      </div>
+
+      <div class="threat-card">
+        <div class="threat-header warning">
+          <span class="threat-severity warning">Warning</span>
+          <span class="threat-title">AIO citation count is 3-4x worse than direct rivals</span>
+        </div>
+        <div class="threat-body">Estuary surfaces in 7 AI Overviews; Fivetran and Airbyte each surface in 25+. The pages where Estuary already wins (Apache Iceberg, Postgres, Redshift) are infrastructure topics where it has technical credibility — the playbook should be replicated against Fivetran/Airbyte/Hevo comparison terms and CDC/streaming category terms where Estuary's "right-time" wedge is sharpest.</div>
+      </div>
+
+      <div class="threat-card">
+        <div class="threat-header warning">
+          <span class="threat-severity warning">Warning</span>
+          <span class="threat-title">Authority deficit: 16-point DR gap to Fivetran, 13-point gap to Airbyte/Hevo</span>
+        </div>
+        <div class="threat-body">Estuary DR 64 vs Fivetran 80, Airbyte 77, Hevo 76. The recent DR drop (67 → 64 in one month) tracks the ongoing link cleanup. Closing this gap is a multi-quarter program — disavow first, then earn DR-70+ links via thought leadership and category-defining "right-time" content.</div>
+      </div>
+
+      <div class="threat-card">
+        <div class="threat-header opportunity">
+          <span class="threat-severity opportunity">Opportunity</span>
+          <span class="threat-title">Hevo and Airbyte are also declining — there's a window</span>
+        </div>
+        <div class="threat-body">Hevo (-72% YoY, -85% from peak) and Airbyte (-45% YoY) are both bleeding traffic. Several keywords they currently own — including <em>data integrity software</em>, <em>streaming data pipeline</em>, <em>ai pipeline</em>, <em>database migration tools</em>, <em>data wrangling software</em> — are weak rankings (positions 5-10) and ripe to take. Prioritize content gaps where Estuary can pair real-time / CDC differentiation with informational depth.</div>
+      </div>
+
+      <div class="threat-card">
+        <div class="threat-header opportunity">
+          <span class="threat-severity opportunity">Opportunity</span>
+          <span class="threat-title">Comparison content is the highest-leverage swing-state</span>
+        </div>
+        <div class="threat-body">Estuary already has /blog/fivetran-alternatives-guide/ and /blog/what-is-fivetran/ in its top-15 traffic pages — comparison content compounds. Build out the head-to-head content matrix (Estuary vs Fivetran/Airbyte/Hevo/Stitch/Matillion) with the anti-MAR pricing story, exactly-once delivery, and right-time positioning. Fivetran writes its own comparisons and wins the AIO — Estuary should mirror that defensive playbook.</div>
+      </div>
+
+      <div class="insight-grid">
+        <div class="insight-box">
+          <h4>Priority Action Matrix — Next 90 Days</h4>
+          <ul>
+            <li><strong>Weeks 1-4:</strong> Toxic-link disavow, technical audit fix queue, schema markup on top-15 pages</li>
+            <li><strong>Weeks 5-8:</strong> AEO refresh of /blog/data-integration-tools, /blog/best-data-streaming-platforms, /blog/what-is-fivetran — these are all top-15 traffic pages with clear AIO opportunity</li>
+            <li><strong>Weeks 9-12:</strong> New comparison content — Estuary vs Airbyte, Estuary vs Hevo, Estuary vs Stitch — each anchored to the right-time + anti-MAR thesis</li>
+          </ul>
+        </div>
+        <div class="insight-box">
+          <h4>Defensive Watch-list</h4>
+          <ul>
+            <li><strong>Fivetran:</strong> watch DR moves, AIO citations on "data integration" / "ETL" terms, any new comparison pages targeting Estuary by name</li>
+            <li><strong>Airbyte:</strong> watch agentic-data and zero-ETL content — they're staking the AI-era category narrative Estuary needs to own</li>
+            <li><strong>Hevo:</strong> tracking the same algorithm shock as Estuary — recovery race; both will rebuild around AI-era informational content</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Generated on May 8, 2026 | Data as of May 8, 2026 | Source: Ahrefs</div>
+  </main>
+</div>
+
+<script>
+// ====== DATA ======
+const months = ['Apr 2025','May 2025','Jun 2025','Jul 2025','Aug 2025','Sep 2025','Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026','Mar 2026','Apr 2026','May 2026'];
+
+const trafficHistory = {
+  Estuary:  [24573,31065,36251,40908,48228,65560,46274,43072,44044,46462,33726,21987,7637,6562],
+  Fivetran: [68567,69701,69484,68773,67120,73399,80723,67431,60779,69571,76537,84818,86539,86463],
+  Hevo:     [46377,46342,46606,59874,80577,82430,71531,63064,59919,58115,45408,34374,13834,12726],
+  Airbyte:  [82483,81885,81540,81910,74904,70997,68131,65131,64678,66632,62942,57879,44965,45266]
+};
+const trafficValueHistory = {
+  Estuary:  [54096,75464,85021,83646,85330,119620,112393,96163,93660,95321,71044,48046,17192,14374],
+  Fivetran: [242588,258388,261829,261751,253591,292112,321066,266675,226353,258602,284437,306334,308682,297462],
+  Hevo:     [88654,91639,90069,113169,153018,160485,132951,108804,100184,97035,75912,55325,24103,20469],
+  Airbyte:  [253358,239972,236364,237405,227811,208942,200452,195756,193802,200383,197466,186789,161841,165045]
+};
+const refdomainsHistory = {
+  Estuary:  [765,760,779,852,915,983,1136,1461,2284,2597,2320,2300,2321,2375],
+  Fivetran: [4319,4494,4444,4835,4964,5200,5353,5343,5584,5630,5802,6935,7490,7824],
+  Hevo:     [4038,4516,4615,4732,5095,5274,5702,5678,5619,5457,5090,4708,4139,4178],
+  Airbyte:  [2725,3132,3321,3498,3815,4013,4262,4230,4483,4839,4395,4313,4169,4285]
+};
+const drHistory = {
+  Estuary:  [60,60,62,63,63,63,64,64,65,65,65,66,67,64],
+  Fivetran: [77,77,77,77,77,77,79,79,79,79,80,80,80,80],
+  Hevo:     [75,75,75,75,75,75,75,76,76,76,76,76,76,76],
+  Airbyte:  [74,74,75,75,75,75,76,77,77,77,77,77,77,77]
+};
+const positionDistEstuary = {
+  top3:      [608,735,780,807,939,960,767,809,790,760,674,618,334,120],
+  top4_10:   [1666,1854,1897,2056,2071,2155,2437,2506,2263,2167,2021,1839,1091,594],
+  top11_20:  [2032,2323,2440,2490,2712,2269,1109,761,563,508,424,346,232,97],
+  top21_50:  [3297,3366,3613,3922,4508,4106,1335,765,543,528,502,486,437,180],
+  top51plus: [3147,2066,2201,2615,3447,3169,1049,566,370,362,499,598,454,52]
+};
+const estuaryCountries = [
+  {country:'United States', traffic:4515},
+  {country:'India', traffic:1076},
+  {country:'United Kingdom', traffic:146},
+  {country:'Brazil', traffic:81},
+  {country:'Pakistan', traffic:81},
+  {country:'Canada', traffic:73},
+  {country:'Russia', traffic:71},
+  {country:'Indonesia', traffic:43},
+  {country:'Australia', traffic:42},
+  {country:'Spain', traffic:38}
+];
+
+// Top pages
+const topPages = {
+  estuary: [
+    ['https://estuary.dev/',1006,12,'estuary',39000],
+    ['https://estuary.dev/blog/best-data-streaming-platforms/',215,8,'data streaming platform',1000],
+    ['https://estuary.dev/blog/data-integration-tools/',160,10,'data integration tools',2600],
+    ['https://estuary.dev/blog/redshift-vs-dynamodb/',128,7,'amazon redshift vs dynamodb',150],
+    ['https://estuary.dev/blog/data-streaming-technologies/',122,6,'data streaming technologies',250],
+    ['https://estuary.dev/blog/redshift-datediff-dateadd-functions/',95,35,'redshift datediff',250],
+    ['https://estuary.dev/blog/what-is-an-etl-pipeline/',81,9,'etl pipeline example',150],
+    ['https://estuary.dev/blog/event-driven-architecture-examples/',75,6,'event driven architecture use cases',60],
+    ['https://estuary.dev/blog/database-keys-and-their-types/',73,17,'database key types',200],
+    ['https://estuary.dev/product/',67,2,'estuary flow',200],
+    ['https://estuary.dev/blog/fivetran-alternatives-guide/',64,4,'fivetran alternatives',300],
+    ['https://estuary.dev/blog/what-is-fivetran/',62,7,'what is fivetran',700],
+    ['https://estuary.dev/blog/snowpipe-streaming-fast-snowflake-ingestion/',60,4,'snowpipe streaming',350],
+    ['https://estuary.dev/blog/distributed-architecture/',51,8,'distributed application architecture',90],
+    ['https://estuary.dev/blog/data-lakehouse-vs-data-mesh/',50,4,'lakehouse vs data mesh',50]
+  ],
+  fivetran: [
+    ['https://www.fivetran.com/',20310,74,'fivetran',30000],
+    ['https://www.fivetran.com/learn/data-warehouse-designs',1274,17,'data warehouse design',44000],
+    ['https://www.fivetran.com/careers',881,22,'fivetran',30000],
+    ['https://www.fivetran.com/pricing',868,29,'fivetran',30000],
+    ['https://www.fivetran.com/learn/data-integration-tools',795,47,'data integration solutions',2500],
+    ['https://www.fivetran.com/learn/iam-solutions',746,102,'identity and access management services',900],
+    ['https://www.fivetran.com/blog/what-is-a-data-pipeline',721,25,'what is a data pipeline',54000],
+    ['https://www.fivetran.com/learn/columnar-database-vs-row-database',688,51,'column vs row',19000],
+    ['https://www.fivetran.com/learn/benefits-of-data-warehouse',678,20,'benefits of data warehouse',450],
+    ['https://www.fivetran.com/blog/intro-to-marketing-analytics',606,66,'marketing analytics',6100],
+    ['https://www.fivetran.com/learn/etl-tools',560,84,'etl tools',4900],
+    ['https://www.fivetran.com/about',557,30,'fivetran',30000],
+    ['https://www.fivetran.com/platform-overview',487,27,'fivetran',30000],
+    ['https://www.fivetran.com/learn/microsoft-azure-vs-aws',458,109,'azure vs aws',600],
+    ['https://fivetran.com/dashboard',434,6,'fivetran',30000]
+  ],
+  hevo: [
+    ['https://hevodata.com/learn/data-migration-tools/',208,14,'data migration program',150],
+    ['https://hevodata.com/',182,7,'hevo data',350],
+    ['https://hevodata.com/learn/redshift-datediff-and-dateadd/',165,27,'redshift datediff',250],
+    ['https://hevodata.com/learn/bigquery-insert-and-update/',118,28,'bigquery updates',800],
+    ['https://hevodata.com/learn/sumx-power-bi/',112,11,'sumx power bi',250],
+    ['https://hevodata.com/learn/tableau-open-source/',108,19,'tableau alternatives',800],
+    ['https://hevodata.com/learn/asana-vs-trello-vs-monday/',103,15,'monday vs asana vs trello',100],
+    ['https://hevodata.com/learn/date-add-bigquery/',102,32,'bigquery date_add',80],
+    ['https://hevodata.com/learn/bigquery-regex/',87,21,'bigquery regexp',150],
+    ['https://hevodata.com/learn/tableau-case-statement/',83,32,'tableau case when',250],
+    ['https://hevodata.com/learn/bigquery-ifnull/',81,15,'bigquery ifnull',150],
+    ['https://hevodata.com/learn/postgresql-convert-datetime-to-date/',77,36,'postgresql convert datetime to date',40],
+    ['https://docs.hevodata.com/account-management/billing/pricing-plans/',76,2,'hevo data pricing',150],
+    ['https://hevodata.com/learn/export-airtable-to-excel/',70,11,'airtable export to excel',150],
+    ['https://hevodata.com/learn/comprehensive-guide-on-aws-sqs-pricing/',69,11,'aws sqs pricing',300]
+  ],
+  airbyte: [
+    ['https://airbyte.com/',11896,53,'airbyte',12000],
+    ['https://airbyte.com/pricing',490,12,'airbyte',12000],
+    ['https://airbyte.com/connectors',361,8,'airbyte',12000],
+    ['https://docs.airbyte.com/',335,14,'airbyte',12000],
+    ['https://cloud.airbyte.com/',314,6,'airbyte',12000],
+    ['https://airbyte.com/top-etl-tools-for-sources/data-integrity-tools',275,6,'data integrity software',600],
+    ['https://airbyte.com/solutions/airbyte-open-source',266,11,'airbyte',12000],
+    ['https://airbyte.com/data-engineering-resources/sql-server-pricing',186,75,'microsoft sql server price',250],
+    ['https://airbyte.com/product/pyairbyte',150,1,'pyairbyte',150],
+    ['https://airbyte.com/data-engineering-resources/data-integration-architecture',101,3,'data integration architecture diagram',150],
+    ['https://airbyte.com/compare/airflow-vs-airbyte',98,5,'airbyte vs airflow',150],
+    ['https://cost.airbyte.com/',78,2,'airbyte pricing',500],
+    ['https://airbyte.com/company/careers',73,7,'airbyte careers',150],
+    ['https://airbyte.com/blog/how-we-chose-our-logo-and-mascot',70,1,'airbyte logo',200],
+    ['https://cloud.airbyte.com/login',69,4,'airbyte login',200]
+  ]
+};
+
+// Keyword gap data
+const gapData = {
+  fivetran: [
+    ['data warehouse design',9,44000,1237,'https://www.fivetran.com/learn/data-warehouse-designs'],
+    ['column vs row',6,19000,334,'https://www.fivetran.com/learn/columnar-database-vs-row-database'],
+    ['elt',7,8800,255,'https://www.fivetran.com/blog/what-is-elt'],
+    ['marketing analytics',10,6100,126,'https://www.fivetran.com/blog/intro-to-marketing-analytics'],
+    ['columns vs rows',10,5500,41,'https://www.fivetran.com/learn/columnar-database-vs-row-database'],
+    ['data pipeline',4,5200,67,'https://www.fivetran.com/learn/data-pipeline-vs-etl'],
+    ['etl tools',1,4900,104,'https://www.fivetran.com/learn/etl-tools'],
+    ['database schema',1,3500,0,'https://www.fivetran.com/learn/what-is-a-database-schema'],
+    ['quantitative data examples',9,3100,15,'https://www.fivetran.com/learn/quantitative-data-analysis'],
+    ['data integration software',8,2900,138,'https://www.fivetran.com/learn/data-integration-tools'],
+    ['extensibility',8,2500,24,'https://www.fivetran.com/learn/what-is-extensibility'],
+    ['data integration solutions',7,2500,156,'https://www.fivetran.com/learn/data-integration-tools'],
+    ['extensible',1,2500,0,'https://www.fivetran.com/learn/what-is-extensibility'],
+    ['primary key vs foreign key',5,2300,203,'https://www.fivetran.com/learn/primary-key-vs-foreign-key'],
+    ['generative ai vs predictive ai',6,1900,145,'https://www.fivetran.com/learn/generative-ai-vs-predictive-ai']
+  ],
+  hevo: [
+    ['what is rest api',3,4500,0,'https://hevodata.com/learn/api-vs-rest-api/'],
+    ['data models',1,800,0,'https://hevodata.com/learn/simple-data-model/'],
+    ['seo client reporting tools',1,500,0,'https://hevodata.com/learn/top-seo-reporting-tools/'],
+    ['what does rest stand for',1,400,0,'https://hevodata.com/learn/api-vs-rest-api/'],
+    ['data analytics and visualization',4,350,0,'https://hevodata.com/learn/data-analytics-and-visualization/'],
+    ['sumx',5,350,0,'https://hevodata.com/learn/sumx-power-bi/'],
+    ['database migration tools',4,350,40,'https://hevodata.com/learn/data-migration-tools/'],
+    ['semantic models',1,350,0,'https://hevodata.com/learn/understanding-snowflake-data-model/'],
+    ['sql median',1,350,0,'https://hevodata.com/learn/google-bigquery-median/'],
+    ['data virtualization tools',9,350,9,'https://hevodata.com/learn/data-virtualization-tools/'],
+    ['data reconciliation software',3,300,43,'https://hevodata.com/learn/top-7-data-reconciliation-tools/'],
+    ['data wrangling software',5,200,20,'https://hevodata.com/learn/data-wrangling-tools/'],
+    ['api vs rest api',8,200,8,'https://hevodata.com/learn/api-vs-rest-api/'],
+    ['database migration tool',2,200,30,'https://hevodata.com/learn/data-migration-tools/'],
+    ['dbt deps',10,200,6,'https://hevodata.com/data-transformation/dbt-deps/']
+  ],
+  airbyte: [
+    ['data modeling',6,6900,0,'https://airbyte.com/blog/sql-data-modeling-with-dbt'],
+    ['data modelling',4,1100,0,'https://airbyte.com/blog/sql-data-modeling-with-dbt'],
+    ['data integrity software',2,600,233,'https://airbyte.com/top-etl-tools-for-sources/data-integrity-tools'],
+    ['kv caching',5,600,2,'https://airbyte.com/agentic-data/kv-caching'],
+    ['ai pipeline',2,500,23,'https://airbyte.com/data-engineering-resources/ai-data-pipeline'],
+    ['big data storage solutions',8,400,20,'https://airbyte.com/top-etl-tools-for-sources/big-data-storage-solutions'],
+    ['htap',4,400,0,'https://airbyte.com/data-engineering-resources/cockroachdb-for-analytics'],
+    ['data synchronization tools',7,350,20,'https://airbyte.com/top-etl-tools-for-sources/data-sync-tools'],
+    ['enterprise data analytics',5,350,33,'https://airbyte.com/data-engineering-resources/enterprise-data-analytics'],
+    ['zero etl',8,350,17,'https://airbyte.com/data-engineering-resources/zero-etl'],
+    ['streaming data pipeline',5,300,26,'https://airbyte.com/data-engineering-resources/streaming-data-pipeline'],
+    ['open source etl tools',10,300,10,'https://airbyte.com/'],
+    ['data integration best practices',1,250,0,'https://airbyte.com/data-engineering-resources/data-integration-best-practices'],
+    ['predicate pushdown',6,250,15,'https://airbyte.com/data-engineering-resources/predicate-pushdown'],
+    ['agent connector',6,200,11,'https://airbyte.com/blog/agent-connectors']
+  ]
+};
+
+// AIO data
+const aioData = {
+  estuary: [
+    ['materializations',1,50,1,'https://docs.estuary.dev/concepts/materialization/'],
+    ['what is redshift database',1,200,0,'https://estuary.dev/blog/redshift-vs-dynamodb/'],
+    ['salesforce to redshift',1,200,0,'https://estuary.dev/blog/best-etl-tools-for-salesforce/'],
+    ['create database postgres',1,200,0,'https://estuary.dev/blog/postgres-schema/'],
+    ['pubsub kafka',1,30,0,'https://estuary.dev/blog/kafka-vs-pubsub/'],
+    ['how to read parquet files',1,40,0,'https://estuary.dev/blog/apache-parquet-for-data-engineers/'],
+    ['aws iceberg',1,400,0,'https://estuary.dev/blog/apache-iceberg-tutorial-guide/']
+  ],
+  fivetran: [
+    ['fivetran company',1,700,244,'https://www.fivetran.com/'],
+    ['fivetran etl',1,250,189,'https://www.fivetran.com/learn/etl-tools'],
+    ['benefits of data warehouse',1,450,166,'https://www.fivetran.com/learn/benefits-of-data-warehouse'],
+    ['data warehouse benefits',1,350,125,'https://www.fivetran.com/learn/benefits-of-data-warehouse'],
+    ['what does fivetran do',1,200,109,'https://www.fivetran.com/'],
+    ['etl tools',1,4900,104,'https://www.fivetran.com/learn/etl-tools'],
+    ['advantages of data warehouse',1,250,91,'https://www.fivetran.com/learn/benefits-of-data-warehouse'],
+    ['fivetran hvr',1,200,88,'https://fivetran.com/docs/hvr6'],
+    ['benefits of a data warehouse',1,250,87,'https://www.fivetran.com/learn/benefits-of-data-warehouse'],
+    ['data transformation tools',1,1100,78,'https://www.fivetran.com/fr/learn/data-transformation-tool'],
+    ['benefits of data warehousing',1,200,70,'https://www.fivetran.com/learn/benefits-of-data-warehouse'],
+    ['fivetran revenue',1,150,63,'https://www.fivetran.com/press/'],
+    ['airbyte vs fivetran',1,150,56,'https://www.fivetran.com/blog/fivetran-vs-airbyte-features-pricing-services-and-more'],
+    ['on prem to cloud migration steps',1,600,54,'https://www.fivetran.com/de/learn/on-premise-to-cloud-migration'],
+    ['fivetran vs informatica',1,150,52,'https://www.fivetran.com/compare/fivetran-vs-informatica'],
+    ['fivetran etl tool',1,70,50,'https://www.fivetran.com/learn/etl-tools'],
+    ['hvr fivetran',1,90,50,'https://fivetran.com/docs/hvr6'],
+    ['what is fivetran used for',1,90,50,'https://www.fivetran.com/blog/what-is-fivetran'],
+    ['dbt fivetran',1,200,50,'https://www.fivetran.com/press/'],
+    ['fivetran wikipedia',1,100,49,'https://www.fivetran.com/about'],
+    ['fivetran vs snowflake',1,90,35,'https://www.fivetran.com/compare/fivetran-vs-snowflake-openflow'],
+    ['data validation tools',1,300,35,'https://www.fivetran.com/learn/data-validation-tools'],
+    ['what is digital marketing analytics',1,200,33,'https://www.fivetran.com/blog/intro-to-marketing-analytics'],
+    ['fivetran free tier',1,50,32,'https://www.fivetran.com/pricing/free-plan'],
+    ['ai data integration',1,600,30,'https://www.fivetran.com/blog/ai-driven-data-integration-the-future-of-automation']
+  ],
+  hevo: [
+    ['json path expression',1,100,10,'https://docs.hevodata.com/sources/engg-analytics/streaming/rest-api/writing-jsonpath-expressions/'],
+    ['hevo vs fivetran',1,80,9,'https://hevodata.com/learn/hevo-vs-fivetran/'],
+    ['power bi sumif',1,70,3,'https://hevodata.com/learn/power-bi-sumif/'],
+    ['jsonpath expression',1,50,3,'https://docs.hevodata.com/sources/engg-analytics/streaming/rest-api/writing-jsonpath-expressions/'],
+    ['taboola and outbrain',1,20,2,'https://hevodata.com/learn/taboola-vs-outbrain/'],
+    ['gcs data',1,20,1,'https://docs.hevodata.com/sources/dbfs/file-storage/google-cloud-storage-(gcs)/'],
+    ['outbrain and taboola',1,20,0,'https://hevodata.com/learn/taboola-vs-outbrain/'],
+    ['what is redshift database',1,200,0,'https://docs.hevodata.com/destinations/data-warehouses/amazon-redshift/redshift-data-structure/'],
+    ['types of database model',1,30,0,'https://hevodata.com/learn/simple-data-model/'],
+    ['data models',1,800,0,'https://hevodata.com/learn/simple-data-model/'],
+    ['seo client reporting tools',1,500,0,'https://hevodata.com/learn/top-seo-reporting-tools/'],
+    ['semantic models',1,350,0,'https://hevodata.com/learn/understanding-snowflake-data-model/'],
+    ['sftp python',1,90,0,'https://hevodata.com/learn/file-transfer-using-sftp/'],
+    ['what does rest stand for',1,400,0,'https://hevodata.com/learn/api-vs-rest-api/'],
+    ['sql median',1,350,0,'https://hevodata.com/learn/google-bigquery-median/'],
+    ['aws lambda sqs example python',1,200,0,'https://hevodata.com/learn/sqs-to-dynamodb/'],
+    ['faas lambda',1,10,0,'https://hevodata.com/learn/understanding-aws-lambda/'],
+    ['how to convert string to timestamp',1,0,0,'https://hevodata.com/learn/bigquery-timestamp-to-date-functions/']
+  ],
+  airbyte: [
+    ['airbyte vs airflow',1,150,78,'https://docs.airbyte.com/platform/2.0/operator-guides/using-the-airflow-airbyte-operator'],
+    ['airflow vs airbyte',1,80,39,'https://docs.airbyte.com/platform/2.0/operator-guides/using-the-airflow-airbyte-operator'],
+    ['pinecone vs elasticsearch',1,70,27,'https://airbyte.com/data-engineering-resources/elasticsearch-vs-pinecone'],
+    ['what is airbyte used for',1,90,17,'https://airbyte.com/'],
+    ['fivetran vs airbyte',1,100,14,'https://airbyte.com/compare/fivetran-vs-airbyte'],
+    ['mysql vs sqlite',1,250,13,'https://airbyte.com/data-engineering-resources/sqlite-vs-mysql'],
+    ['cockroachdb vs mongodb',1,100,12,'https://airbyte.com/data-engineering-resources/cockroachdb-vs-mongodb'],
+    ['airbyte vs dbt',1,70,6,'https://airbyte.com/tutorials/dbt-core-vs-dbt-cloud'],
+    ['postgres vs redis',1,80,6,'https://airbyte.com/data-engineering-resources/redis-vs-postgresql'],
+    ['what is data staging',1,40,4,'https://airbyte.com/data-engineering-resources/data-staging'],
+    ['data consolidation tools',1,30,4,'https://airbyte.com/top-etl-tools-for-sources/data-consolidation-tools'],
+    ['airbyte competitors',1,150,3,'https://airbyte.com/top-etl-tools-for-sources/fivetran-competitors'],
+    ['mysql license price',1,40,3,'https://airbyte.com/data-engineering-resources/mysql-pricing'],
+    ['postgres vs redshift',1,80,3,'https://airbyte.com/data-engineering-resources/postgres-vs-redshift'],
+    ['redshift vs s3',1,100,3,'https://airbyte.com/data-engineering-resources/redshift-vs-s3'],
+    ['what is zero etl',1,100,2,'https://airbyte.com/data-engineering-resources/zero-etl'],
+    ['oracle etl tool',1,90,2,'https://airbyte.com/top-etl-tools-for-sources/oracle-db'],
+    ['redshift to mongodb',1,20,2,'https://airbyte.com/connections/mongodb-to-redshift'],
+    ['mysql enterprise pricing',1,40,2,'https://airbyte.com/data-engineering-resources/mysql-pricing'],
+    ['predicate push down',1,20,2,'https://airbyte.com/data-engineering-resources/predicate-pushdown'],
+    ['data mining vs. data profiling',1,20,2,'https://airbyte.com/data-engineering-resources/data-mining-vs-data-profiling'],
+    ['tokenizer vs embedding',1,20,1,'https://airbyte.com/data-engineering-resources/tokenization-vs-embeddings'],
+    ['sql server vs oracle',1,40,1,'https://airbyte.com/data-engineering-resources/oracle-vs-sql-server'],
+    ['mpp database examples',1,20,1,'https://airbyte.com/data-engineering-resources/mpp-database'],
+    ['diststyle key',3,10,0,'https://airbyte.com/data-engineering-resources/distkey-and-sortkey-in-redshift']
+  ]
+};
+
+const colors = { Estuary:'#1a56db', Fivetran:'#f59e0b', Hevo:'#ef4444', Airbyte:'#10b981' };
+const colorsArr = ['#1a56db','#f59e0b','#ef4444','#10b981'];
+const labelsArr = ['Estuary','Fivetran','Hevo','Airbyte'];
+
+// ====== UTILITIES ======
+function formatNum(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 100000) return Math.round(n/1000) + 'K';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return Math.round(n).toString();
+}
+function formatTraffic(n) {
+  if (n >= 1000) return n.toLocaleString();
+  return n.toString();
+}
+
+function switchSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+  // Trigger chart resize on visible canvases
+  setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
+}
+function switchTab(id, el) {
+  // Find the tab group container
+  const parent = el.parentElement;
+  parent.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  // Find matching tab-content siblings (they are after the tabs div)
+  const section = el.closest('.section');
+  // Only switch tabs in same group: find all tab-content with this id pattern prefix
+  const prefix = id.split('-')[0];
+  section.querySelectorAll('.tab-content').forEach(tc => {
+    if (tc.id.startsWith(prefix + '-')) tc.classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+  setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
+}
+
+// ====== POPULATE TABLES ======
+function fillPagesTable(domainKey, bodyId) {
+  const tbody = document.getElementById(bodyId);
+  topPages[domainKey].forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><a href="${row[0]}" target="_blank">${row[0]}</a></td><td>${row[1].toLocaleString()}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4].toLocaleString()}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+fillPagesTable('estuary','pages-estuary-body');
+fillPagesTable('fivetran','pages-fivetran-body');
+fillPagesTable('hevo','pages-hevo-body');
+fillPagesTable('airbyte','pages-airbyte-body');
+
+function fillGapTable(key, bodyId) {
+  const tbody = document.getElementById(bodyId);
+  gapData[key].forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${row[0]}</td><td>#${row[1]}</td><td>${row[2].toLocaleString()}</td><td>${row[3]}</td><td><a href="${row[4]}" target="_blank">${row[4]}</a></td>`;
+    tbody.appendChild(tr);
+  });
+}
+fillGapTable('fivetran','gap-fivetran-body');
+fillGapTable('hevo','gap-hevo-body');
+fillGapTable('airbyte','gap-airbyte-body');
+
+function fillAioTable(key, bodyId) {
+  const tbody = document.getElementById(bodyId);
+  aioData[key].forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${row[0]}</td><td>#${row[1]}</td><td>${row[2].toLocaleString()}</td><td>${row[3]}</td><td><a href="${row[4]}" target="_blank">${row[4]}</a></td>`;
+    tbody.appendChild(tr);
+  });
+}
+fillAioTable('estuary','aio-estuary-body');
+fillAioTable('fivetran','aio-fivetran-body');
+fillAioTable('hevo','aio-hevo-body');
+fillAioTable('airbyte','aio-airbyte-body');
+
+// ====== CHART COMMON OPTIONS ======
+const commonChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
+  plugins: {
+    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 12 } } },
+    tooltip: {
+      callbacks: {
+        afterBody: function(items) {
+          if (items.length < 2) return '';
+          const vals = items.map(t => t.raw || 0);
+          const total = vals.reduce((a,b)=>a+b, 0);
+          if (total === 0) return '';
+          let lines = ['','── Share ──'];
+          items.forEach(t => {
+            const pct = ((t.raw / total) * 100).toFixed(1);
+            lines.push(t.dataset.label + ': ' + pct + '%');
+          });
+          return lines;
+        }
+      }
+    }
+  },
+  scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
+};
+
+function makeLineDataset(label) {
+  return {
+    label: label,
+    data: trafficHistory[label],
+    borderColor: colors[label],
+    backgroundColor: colors[label] + '15',
+    fill: false,
+    tension: 0.35,
+    pointRadius: 3,
+    pointHoverRadius: 5,
+    borderWidth: 2
+  };
+}
+
+// ====== CHARTS ======
+setTimeout(function() {
+  // 1. Executive bar chart
+  new Chart(document.getElementById('executiveBarChart'), {
+    type: 'bar',
+    data: {
+      labels: labelsArr,
+      datasets: [
+        { label: 'Org Keywords', data: [884,3537,2308,1191], backgroundColor: '#1a56db', borderRadius: 4, yAxisID: 'y' },
+        { label: 'Org Traffic / mo', data: [4515,51105,6269,20330], backgroundColor: '#f59e0b', borderRadius: 4, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        y: { type: 'linear', position: 'left', title: { display: true, text: 'Keywords' } },
+        y1: { type: 'linear', position: 'right', title: { display: true, text: 'Traffic / mo' }, grid: { drawOnChartArea: false } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 2. SOV stacked area — Ahrefs-style: leader at bottom of stack, layers build upward
+  const sovData = months.map((m, i) => {
+    const total = labelsArr.reduce((s, lbl) => s + trafficHistory[lbl][i], 0);
+    return labelsArr.reduce((o, lbl) => { o[lbl] = total > 0 ? (trafficHistory[lbl][i]/total)*100 : 0; return o; }, {});
+  });
+  // Sort domains by current (latest month) traffic descending so the leader sits at the bottom of the stack — matches Ahrefs Rank Tracker SOV layout
+  const lastIdx = months.length - 1;
+  const sovOrder = [...labelsArr].sort((a, b) => trafficHistory[b][lastIdx] - trafficHistory[a][lastIdx]);
+  new Chart(document.getElementById('sovChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: sovOrder.map(lbl => ({
+        label: lbl,
+        data: sovData.map(d => d[lbl]),
+        borderColor: colors[lbl],
+        backgroundColor: colors[lbl] + 'BB',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 2
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', reverse: true },
+        tooltip: {
+          itemSort: function(a, b) { return b.raw - a.raw; },
+          callbacks: {
+            label: function(ctx) {
+              const lbl = ctx.dataset.label;
+              const i = ctx.dataIndex;
+              const raw = trafficHistory[lbl][i];
+              return `${lbl}: ${ctx.raw.toFixed(1)}% (${raw.toLocaleString()} visits)`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: { stacked: true, max: 100, ticks: { callback: v => v + '%' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 3. Raw traffic line
+  new Chart(document.getElementById('rawTrafficChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: labelsArr.map(lbl => makeLineDataset(lbl))
+    },
+    options: commonChartOptions
+  });
+
+  // 4. Traffic value
+  new Chart(document.getElementById('trafficValueChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: labelsArr.map(lbl => ({
+        label: lbl,
+        data: trafficValueHistory[lbl],
+        borderColor: colors[lbl],
+        backgroundColor: colors[lbl] + '15',
+        fill: false,
+        tension: 0.35,
+        pointRadius: 3,
+        borderWidth: 2
+      }))
+    },
+    options: { ...commonChartOptions, scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'K' } }, x: { grid: { display: false } } } }
+  });
+
+  // 5. Position distribution (Estuary stacked)
+  new Chart(document.getElementById('positionDistChart'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'Top 3', data: positionDistEstuary.top3, backgroundColor: '#1a56db' },
+        { label: 'Top 4-10', data: positionDistEstuary.top4_10, backgroundColor: '#3b82f6' },
+        { label: 'Top 11-20', data: positionDistEstuary.top11_20, backgroundColor: '#93c5fd' },
+        { label: 'Top 21-50', data: positionDistEstuary.top21_50, backgroundColor: '#f59e0b' },
+        { label: 'Top 51+', data: positionDistEstuary.top51plus, backgroundColor: '#ef4444' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { stacked: true, beginAtZero: true }, x: { stacked: true, grid: { display: false } } }
+    }
+  });
+
+  // 6. DR history
+  new Chart(document.getElementById('drHistoryChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: labelsArr.map(lbl => ({
+        label: lbl,
+        data: drHistory[lbl],
+        borderColor: colors[lbl],
+        backgroundColor: colors[lbl] + '15',
+        fill: false,
+        tension: 0.3,
+        pointRadius: 3,
+        borderWidth: 2
+      }))
+    },
+    options: { ...commonChartOptions, scales: { y: { min: 50, max: 100, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } } }
+  });
+
+  // 7. Refdomains history
+  new Chart(document.getElementById('refDomHistoryChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: labelsArr.map(lbl => ({
+        label: lbl,
+        data: refdomainsHistory[lbl],
+        borderColor: colors[lbl],
+        backgroundColor: colors[lbl] + '15',
+        fill: false,
+        tension: 0.35,
+        pointRadius: 3,
+        borderWidth: 2
+      }))
+    },
+    options: commonChartOptions
+  });
+
+  // 8. Traffic line big
+  new Chart(document.getElementById('trafficLineChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: labelsArr.map(lbl => makeLineDataset(lbl))
+    },
+    options: commonChartOptions
+  });
+
+  // 9. Estuary country bar (horizontal)
+  new Chart(document.getElementById('estuaryCountryChart'), {
+    type: 'bar',
+    data: {
+      labels: estuaryCountries.map(c => c.country),
+      datasets: [{
+        label: 'Org Traffic / mo',
+        data: estuaryCountries.map(c => c.traffic),
+        backgroundColor: '#1a56db',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true } }
+    }
+  });
+
+  // 10. US traffic comparison
+  new Chart(document.getElementById('usTrafficChart'), {
+    type: 'bar',
+    data: {
+      labels: labelsArr,
+      datasets: [{
+        label: 'US Org Traffic',
+        data: [4515, 51105, 6269, 20330],
+        backgroundColor: colorsArr,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+    }
+  });
+
+  // ====== Competitive metrics ======
+  const metricChartConfig = (data) => {
+    const total = data.reduce((a,b)=>a+b,0);
+    return {
+      type: 'bar',
+      data: {
+        labels: labelsArr,
+        datasets: [{ data: data, backgroundColor: colorsArr, borderRadius: 4, barPercentage: 0.6 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const v = ctx.raw;
+                const pct = ((v/total)*100).toFixed(1);
+                return ctx.label + ': ' + v.toLocaleString() + '  (' + pct + '%)';
+              }
+            }
+          }
+        },
+        scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+      }
+    };
+  };
+
+  new Chart(document.getElementById('metricRefDomains'), metricChartConfig([2392, 7832, 4208, 4323]));
+  new Chart(document.getElementById('metricDR'), metricChartConfig([64, 80, 76, 77]));
+  new Chart(document.getElementById('metricTraffic'), metricChartConfig([4515, 51105, 6269, 20330]));
+  new Chart(document.getElementById('metricKeywords'), metricChartConfig([884, 3537, 2308, 1191]));
+  new Chart(document.getElementById('metricTrafficValue'), metricChartConfig([12724, 237241, 14692, 127449]));
+  new Chart(document.getElementById('metricBacklinks'), metricChartConfig([14132, 329789, 25600, 781030]));
+
+  // 11. AIO count chart
+  new Chart(document.getElementById('aioCountChart'), {
+    type: 'bar',
+    data: {
+      labels: labelsArr,
+      datasets: [
+        { label: 'AIO Keywords', data: [7, 25, 18, 25], backgroundColor: '#1a56db', yAxisID: 'y', borderRadius: 4 },
+        { label: 'AIO Traffic', data: [1, 1850, 28, 251], backgroundColor: '#f59e0b', yAxisID: 'y1', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        y: { type: 'linear', position: 'left', title: { display: true, text: 'AIO Keyword Count' } },
+        y1: { type: 'linear', position: 'right', title: { display: true, text: 'AIO Traffic / mo' }, grid: { drawOnChartArea: false } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+}, 100);
+</script>
+</body>
+</html>
