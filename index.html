@@ -133,6 +133,7 @@ td a:hover { text-decoration: underline; }
       <li><a class="nav-link" onclick="switchSection('top-pages', this)">Top Pages</a></li>
       <li><a class="nav-link" onclick="switchSection('keyword-gap', this)">Keyword Gap Analysis</a></li>
       <li><a class="nav-link" onclick="switchSection('aio-performance', this)">AI Overview Performance</a></li>
+      <li><a class="nav-link" onclick="switchSection('profound-ai-search', this)">AI Search (Profound)</a></li>
       <li><a class="nav-link" onclick="switchSection('threats', this)">Strategic Threats &amp; Insights</a></li>
     </ul>
   </nav>
@@ -563,6 +564,93 @@ td a:hover { text-decoration: underline; }
             <li><strong>data integration tools / etl tools</strong> (vol 4,900) — Fivetran's #1 AIO citation. Estuary's existing post needs targeted AEO updates.</li>
             <li><strong>ai data integration</strong> (vol 600) — Fivetran owns this with an AI-era post; ties directly to Estuary's "right-time" + AI thesis.</li>
             <li><strong>kafka vs kinesis / kafka alternatives</strong> — Confluent and Kafka.apache.org dominate streaming-infra terms. Build Estuary-as-Kafka-alternative content where the value-prop is "managed CDC + streaming, no Kafka cluster ops".</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9b. AI SEARCH (PROFOUND) -->
+    <section id="profound-ai-search" class="section">
+      <h2 class="section-title">AI Search Performance — Profound</h2>
+      <p class="section-desc">Month-over-month share of voice, sentiment, and competitive positioning inside the AI-search surface (ChatGPT, Gemini, Perplexity, Google AI Mode, Google AI Overviews, Claude, Copilot, Meta AI, Grok). Data source: Profound, category "Data Integration Software". This is a distinct signal from Ahrefs — it measures how AI assistants surface Estuary vs. its competitors when a user asks about data-integration tooling.</p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Visibility Score</div><div class="kpi-value">43.1%</div><div class="kpi-domain">Estuary — last 30d</div></div>
+        <div class="kpi-card"><div class="kpi-label">Share of Voice</div><div class="kpi-value">6.58%</div><div class="kpi-domain">Estuary — last 30d</div></div>
+        <div class="kpi-card"><div class="kpi-label">Category Rank</div><div class="kpi-value">#3</div><div class="kpi-domain">Est. — down from #2 last month</div></div>
+        <div class="kpi-card"><div class="kpi-label">Avg. Position When Mentioned</div><div class="kpi-value">3.84</div><div class="kpi-domain">Estuary — last 30d</div></div>
+        <div class="kpi-card"><div class="kpi-label">Positive Sentiment</div><div class="kpi-value">91.8%</div><div class="kpi-domain">Estuary — 30d avg</div></div>
+        <div class="kpi-card"><div class="kpi-label">Negative Sentiment</div><div class="kpi-value">8.2%</div><div class="kpi-domain">Estuary — 30d avg</div></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Share of Voice Trend — Estuary vs Top 8 Competitors</div>
+        <div class="chart-desc">Monthly share of voice (Estuary's proportion of all brand mentions in AI-search responses for Data Integration Software prompts). Fivetran is the category leader; Estuary is fighting Airbyte for #2/#3.</div>
+        <div style="height:420px;"><canvas id="profoundSovChart"></canvas></div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-container">
+          <div class="chart-title">Visibility Score Trend</div>
+          <div class="chart-desc">Share of AI answers that mention the brand. Higher = more AI-surface presence.</div>
+          <div style="height:340px;"><canvas id="profoundVisibilityChart"></canvas></div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">Average Position When Mentioned</div>
+          <div class="chart-desc">Mean rank in the AI response when the brand is cited. Lower is better.</div>
+          <div style="height:340px;"><canvas id="profoundPositionChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Estuary Sentiment Over Time</div>
+        <div class="chart-desc">Daily positive vs negative sentiment mix across all AI mentions of Estuary. Sits in a stable 89–95% positive band — no crisis, but no upward trend either.</div>
+        <div style="height:360px;"><canvas id="profoundSentimentChart"></canvas></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Category Leaderboard — Last 30 Days (Jun 22 – Jul 22)</div>
+        <div class="chart-desc">Top 15 brands by AI-search visibility in the Data Integration Software category. Estuary is shown as an owned brand; all others are competitors.</div>
+        <div style="overflow-x:auto;"><table>
+          <thead><tr><th>Rank</th><th>Brand</th><th>Visibility Score</th><th>Share of Voice</th><th>Avg. Position</th><th>MoM SoV Change</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><strong style="color:#f59e0b;">Fivetran</strong></td><td>50.4%</td><td>7.65%</td><td>3.24</td><td class="delta-flat">+0.00 pp</td></tr>
+            <tr><td>2</td><td><strong>Airbyte</strong></td><td>45.9%</td><td>6.94%</td><td>4.17</td><td class="delta-up">+0.21 pp</td></tr>
+            <tr><td>3</td><td><strong style="color:#1a56db;">Estuary</strong></td><td>43.1%</td><td>6.58%</td><td>3.84</td><td class="delta-down">−0.35 pp</td></tr>
+            <tr><td>4</td><td>Debezium</td><td>36.0%</td><td>5.45%</td><td>3.81</td><td class="delta-up">+0.28 pp</td></tr>
+            <tr><td>5</td><td>Snowflake</td><td>32.2%</td><td>4.91%</td><td>2.54</td><td class="delta-up">+0.07 pp</td></tr>
+            <tr><td>6</td><td>AWS</td><td>25.3%</td><td>3.78%</td><td>4.41</td><td class="delta-down">−0.25 pp</td></tr>
+            <tr><td>7</td><td>Kafka</td><td>20.9%</td><td>3.19%</td><td>4.12</td><td class="delta-up">+0.24 pp</td></tr>
+            <tr><td>8</td><td><strong style="color:#ef4444;">Hevo</strong></td><td>13.2%</td><td>2.07%</td><td>5.17</td><td class="delta-down">−0.28 pp</td></tr>
+            <tr><td>9</td><td>PostgreSQL</td><td>13.1%</td><td>1.99%</td><td>2.60</td><td class="delta-up">+0.52 pp</td></tr>
+            <tr><td>10</td><td>Matillion</td><td>12.0%</td><td>1.88%</td><td>5.27</td><td class="delta-up">+0.03 pp</td></tr>
+            <tr><td>11</td><td>Databricks</td><td>11.6%</td><td>1.77%</td><td>3.06</td><td class="delta-up">+0.11 pp</td></tr>
+            <tr><td>12</td><td>Azure</td><td>10.6%</td><td>1.58%</td><td>5.39</td><td class="delta-down">−0.02 pp</td></tr>
+            <tr><td>13</td><td>Striim</td><td>10.2%</td><td>1.52%</td><td>5.39</td><td class="delta-flat">+0.00 pp</td></tr>
+            <tr><td>14</td><td>Confluent</td><td>9.28%</td><td>1.40%</td><td>4.15</td><td class="delta-up">+0.02 pp</td></tr>
+            <tr><td>15</td><td>Streamkap</td><td>8.97%</td><td>1.37%</td><td>4.93</td><td class="delta-flat">+0.00 pp</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="insight-grid">
+        <div class="insight-box">
+          <h4>What changed vs. last month</h4>
+          <ul>
+            <li><strong>Estuary dropped from #2 → #3</strong> in the category leaderboard. Airbyte overtook Estuary on visibility (45.9% vs 43.1%) and share of voice (6.94% vs 6.58%).</li>
+            <li>Estuary's visibility contracted 48.3% → 43.1% over the past 30 days; SoV contracted 6.93% → 6.58%.</li>
+            <li>Fivetran held rank #1 but its visibility also softened (53.9% → 50.4%), suggesting AI-surface volume is shifting across the whole category, not just Estuary.</li>
+            <li>Kafka.apache.org continues to gain share (SoV 2.70% → 3.21% over 3 months). Consistent with the Ahrefs read.</li>
+            <li>Sentiment is stable — 91–92% positive is unchanged from prior month. No brand-reputation issue.</li>
+          </ul>
+        </div>
+        <div class="insight-box">
+          <h4>Cross-signal reconciliation with Ahrefs</h4>
+          <ul>
+            <li><strong>Traditional search (Ahrefs):</strong> Estuary is recovering — top-3 keyword count doubled and traffic is inching back up. Recovery story is real on the traditional-SEO surface.</li>
+            <li><strong>AI search (Profound):</strong> Estuary is losing ground — dropped a rank spot to Airbyte and visibility contracted 5 percentage points MoM.</li>
+            <li><strong>The disconnect matters:</strong> AI-search rankings are increasingly independent of traditional SEO. Gaining Google top-3 positions doesn't automatically translate into AI-assistant citations. Estuary is winning back Google, but losing the AI-assistant race — which is the surface buyers increasingly start on.</li>
+            <li><strong>Airbyte's rise is worth understanding.</strong> Their Ahrefs traffic is <em>also</em> declining, so their AI-search rise isn't being driven by traditional SEO. Likely their content/PR pushing AI-era terminology (agentic data, zero ETL) is compounding into AI-assistant citations independently of search rankings.</li>
           </ul>
         </div>
       </div>
@@ -2703,6 +2791,190 @@ setTimeout(function() {
       scales: {
         y: { type: 'linear', position: 'left', title: { display: true, text: 'AIO Keyword Count' } },
         y1: { type: 'linear', position: 'right', title: { display: true, text: 'AIO Traffic / mo' }, grid: { drawOnChartArea: false } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ====== PROFOUND (AI SEARCH) CHARTS ======
+  const profoundMonths = ['May 2026', 'Jun 2026', 'Jul 2026'];
+  // Share of Voice (%) x 3 months for top 8 competitors
+  const profoundSov = {
+    Fivetran:  [7.75, 7.82, 7.60],
+    Estuary:   [7.19, 6.68, 6.58],
+    Airbyte:   [6.65, 6.94, 6.91],
+    Debezium:  [5.04, 5.44, 5.43],
+    Snowflake: [4.80, 5.03, 4.88],
+    AWS:       [3.85, 4.02, 3.71],
+    Kafka:     [2.70, 3.09, 3.21],
+    Hevo:      [2.47, 2.14, 2.07]
+  };
+  const profoundVisibility = {
+    Fivetran:  [55.2, 51.4, 50.5],
+    Estuary:   [50.5, 43.4, 43.1],
+    Airbyte:   [47.5, 45.8, 46.0],
+    Debezium:  [35.3, 35.8, 36.1],
+    Snowflake: [33.2, 32.7, 32.1],
+    Kafka:     [18.7, 20.1, 21.2],
+    Hevo:      [17.2, 13.5, 13.3]
+  };
+  const profoundAvgPosition = {
+    Fivetran:  [3.33, 3.23, 3.25],
+    Estuary:   [4.10, 3.82, 3.86],
+    Airbyte:   [4.24, 4.09, 4.18],
+    Debezium:  [4.15, 3.86, 3.83],
+    Snowflake: [2.48, 2.53, 2.57],
+    Kafka:     [4.44, 4.23, 4.12],
+    Hevo:      [5.49, 5.13, 5.20]
+  };
+  // Sentiment: pos % daily from May 15 - Jul 21
+  const sentimentDates = ['May 15','May 20','May 25','May 30','Jun 04','Jun 09','Jun 14','Jun 19','Jun 24','Jun 29','Jul 04','Jul 09','Jul 14','Jul 19'];
+  const sentimentPositive = [91.8, 94.8, 91.4, 90.9, 92.6, 91.3, 90.9, 90.6, 90.2, 92.0, 91.6, 92.3, 92.6, 89.5];
+  const sentimentNegative = sentimentPositive.map(v => 100 - v);
+
+  const profoundColors = {
+    Fivetran:  '#f59e0b',
+    Estuary:   '#1a56db',
+    Airbyte:   '#10b981',
+    Debezium:  '#8b5cf6',
+    Snowflake: '#06b6d4',
+    AWS:       '#ec4899',
+    Kafka:     '#14b8a6',
+    Hevo:      '#ef4444'
+  };
+
+  // SoV trend chart
+  trackChart(document.getElementById('profoundSovChart'), {
+    type: 'line',
+    data: {
+      labels: profoundMonths,
+      datasets: Object.keys(profoundSov).map(brand => ({
+        label: brand,
+        data: profoundSov[brand],
+        borderColor: profoundColors[brand],
+        backgroundColor: profoundColors[brand] + '15',
+        fill: false,
+        tension: 0.3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: brand === 'Estuary' ? 3.5 : 2
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ctx.dataset.label + ': ' + ctx.raw.toFixed(2) + '%'; }
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => v + '%' }, title: { display: true, text: 'Share of Voice (%)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Visibility trend chart
+  trackChart(document.getElementById('profoundVisibilityChart'), {
+    type: 'line',
+    data: {
+      labels: profoundMonths,
+      datasets: Object.keys(profoundVisibility).map(brand => ({
+        label: brand,
+        data: profoundVisibility[brand],
+        borderColor: profoundColors[brand],
+        backgroundColor: profoundColors[brand] + '15',
+        fill: false,
+        tension: 0.3,
+        pointRadius: 4,
+        borderWidth: brand === 'Estuary' ? 3.5 : 2
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 11 } } },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.raw.toFixed(1) + '%'; } } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => v + '%' }, title: { display: true, text: 'Visibility Score (%)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Average position chart
+  trackChart(document.getElementById('profoundPositionChart'), {
+    type: 'line',
+    data: {
+      labels: profoundMonths,
+      datasets: Object.keys(profoundAvgPosition).map(brand => ({
+        label: brand,
+        data: profoundAvgPosition[brand],
+        borderColor: profoundColors[brand],
+        backgroundColor: profoundColors[brand] + '15',
+        fill: false,
+        tension: 0.3,
+        pointRadius: 4,
+        borderWidth: brand === 'Estuary' ? 3.5 : 2
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 11 } } },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.raw.toFixed(2); } } }
+      },
+      scales: {
+        y: { reverse: true, min: 1, title: { display: true, text: 'Avg. Position (lower = better)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Sentiment chart (Estuary only, daily)
+  trackChart(document.getElementById('profoundSentimentChart'), {
+    type: 'line',
+    data: {
+      labels: sentimentDates,
+      datasets: [
+        {
+          label: 'Positive Sentiment (%)',
+          data: sentimentPositive,
+          borderColor: '#10b981',
+          backgroundColor: '#10b98120',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3,
+          borderWidth: 2.5
+        },
+        {
+          label: 'Negative Sentiment (%)',
+          data: sentimentNegative,
+          borderColor: '#ef4444',
+          backgroundColor: '#ef444420',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3,
+          borderWidth: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.raw.toFixed(1) + '%'; } } }
+      },
+      scales: {
+        y: { min: 0, max: 100, ticks: { callback: v => v + '%' } },
         x: { grid: { display: false } }
       }
     }
